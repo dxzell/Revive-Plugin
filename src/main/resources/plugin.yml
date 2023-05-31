@@ -1,0 +1,8 @@
+name: Revive
+version: '${project.version}'
+main: com.dxzell.revive.Revive
+api-version: 1.19
+commands:
+  revive:
+
+
