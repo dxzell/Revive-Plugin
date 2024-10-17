@@ -3,17 +3,13 @@ package com.dxzell.revive.knockoutmechanic;
 import com.dxzell.revive.Revive;
 import com.dxzell.revive.configs.MessagesConfig;
 import com.dxzell.revive.configs.SettingsConfig;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.*;
@@ -28,18 +24,16 @@ import java.util.*;
 public class ReviveListener implements Listener {
 
     private DownedPlayer downedPlayer;
-    private Revive main;
     private HashMap<Block, ItemStack[]> chestContents = new HashMap<>();
 
-    public ReviveListener(DownedPlayer downedPlayer, Revive main) {
-        this.main = main;
+    public ReviveListener(DownedPlayer downedPlayer) {
         this.downedPlayer = downedPlayer;
     }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         if (e.getEntity() instanceof Player) {
-            Player player = (Player) e.getEntity();
+            Player player = e.getEntity();
             if (downedPlayer.getRevivalList().contains(player)) {
                 e.setDeathMessage(ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getPlayerDiedMessage(player.getName())));
                 downedPlayer.resetMaps(player);
