@@ -23,26 +23,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class DownedPlayer {
+public abstract class DownedPlayer {
 
-  private HashMap<UUID, List<ArmorStand>> playerStands = new HashMap<>();
-  private HashMap<UUID, Integer> remainingTime = new HashMap<>();
-  private HashMap<UUID, BukkitTask> runnableMap = new HashMap<>();
-  private List<UUID> knockedPlayers = new ArrayList<>();
+  private static HashMap<UUID, List<ArmorStand>> playerStands = new HashMap<>();
+  private static HashMap<UUID, Integer> remainingTime = new HashMap<>();
+  private static HashMap<UUID, BukkitTask> runnableMap = new HashMap<>();
+  private static List<UUID> knockedPlayers = new ArrayList<>();
 
-  private BossBar noPlayerAround =
+  private static BossBar noPlayerAround =
       Bukkit.createBossBar(
           ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getPressSneak()),
           BarColor.GREEN,
           BarStyle.SOLID);
-  private BossBar playerAround =
+  private static BossBar playerAround =
       Bukkit.createBossBar(
           ChatColor.translateAlternateColorCodes(
               '&', MessagesConfig.getInstance().getCantPressSneak()),
           BarColor.RED,
           BarStyle.SOLID);
 
-  public void downPlayer(Player player) {
+  public static void downPlayer(Player player) {
     createKnockedStands(player); // Creates armor stands
     setBossBar(player); // Sets the players bossbar
     startKnockedTimer(player); // Starts the knocked timer
@@ -56,7 +56,7 @@ public class DownedPlayer {
   }
 
   // Checks the mob damage option and resets the mobs current targets if disabled
-  private void checkMobDamage(Player knockedPlayer) {
+  private static void checkMobDamage(Player knockedPlayer) {
     if (!SettingsConfig.getInstance().getMobDamage()) {
       knockedPlayer
           .getNearbyEntities(100, 100, 100)
@@ -72,7 +72,7 @@ public class DownedPlayer {
   }
 
   // Broadcasts a message to the whole server that the given player has been knocked
-  private void broadcastKnockedMessage(Player knockedPlayer) {
+  private static void broadcastKnockedMessage(Player knockedPlayer) {
     Bukkit.getServer()
         .getOnlinePlayers()
         .forEach(
@@ -86,7 +86,7 @@ public class DownedPlayer {
   }
 
   // Spawns particles if the option is enabled
-  private void checkAnimation(Player knockedPlayer) {
+  private static void checkAnimation(Player knockedPlayer) {
     if (SettingsConfig.getInstance().getAnimation()) {
       knockedPlayer
           .getWorld()
@@ -95,14 +95,14 @@ public class DownedPlayer {
   }
 
   // Sends a title message to the knocked player
-  private void sendKnockedTitle(Player player) {
+  private static void sendKnockedTitle(Player player) {
     player.sendTitle(
         ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getTitle(true)),
         ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getTitle(false)));
   }
 
   // Gives the player the blindness effect if the option is enabled
-  private void checkBlindness(Player knockedPlayer) {
+  private static void checkBlindness(Player knockedPlayer) {
     if (SettingsConfig.getInstance().getBlindness())
       knockedPlayer.addPotionEffect(
           new PotionEffect(
@@ -110,7 +110,7 @@ public class DownedPlayer {
   }
 
   // Creates the armor stand for the knocked player
-  private void createKnockedStands(Player knockedPlayer) {
+  private static void createKnockedStands(Player knockedPlayer) {
     String[] knockedText =
         new String[] {
           ChatColor.AQUA
@@ -165,14 +165,14 @@ public class DownedPlayer {
   }
 
   // Starts the timer for the knocked player with the pre-set timer settings
-  public void startKnockedTimer(Player knockedPlayer) {
+  public static void startKnockedTimer(Player knockedPlayer) {
     BukkitTask knockedTask =
         Bukkit.getScheduler()
             .runTaskTimer(
                 Revive.getMainInstance(),
                     () -> {
-                    int remainingTime = this.remainingTime.get(knockedPlayer.getUniqueId());
-                        if (remainingTime == 1) {
+                    int remaining = remainingTime.get(knockedPlayer.getUniqueId());
+                        if (remaining == 1) {
                         if (knockedPlayer
                                 .getInventory()
                                 .getItemInMainHand()
@@ -200,7 +200,7 @@ public class DownedPlayer {
                         }
                       } else {
                         toggleBlindness(knockedPlayer);
-                        this.remainingTime.put(knockedPlayer.getUniqueId(), remainingTime - 1);
+                        remainingTime.put(knockedPlayer.getUniqueId(), remaining - 1);
                           knockedPlayer
                             .spigot()
                             .sendMessage(
@@ -211,31 +211,31 @@ public class DownedPlayer {
                                         + " "
                                         + ChatColor.DARK_RED
                                         + ""
-                                        + remainingTime / 60
+                                        + remaining / 60
                                         + ChatColor.DARK_RED
                                         + ":"
-                                        + (remainingTime % 60 >= 10
-                                            ? "" + ChatColor.DARK_RED + remainingTime % 60
+                                        + (remaining % 60 >= 10
+                                            ? "" + ChatColor.DARK_RED + remaining % 60
                                             : ChatColor.DARK_RED
                                                 + "0"
                                                 + ChatColor.DARK_RED
                                                 + ChatColor.DARK_RED
-                                                + remainingTime % 60)));
+                                                + remaining % 60)));
                         try {
                           ArmorStand stand = playerStands.get(knockedPlayer.getUniqueId()).get(1);
                           stand.setCustomName(
                               ChatColor.AQUA
                                   + ""
-                                  + remainingTime / 60
+                                  + remaining / 60
                                   + ChatColor.AQUA
                                   + ":"
-                                  + (remainingTime % 60 >= 10
-                                      ? "" + ChatColor.AQUA + remainingTime % 60
+                                  + (remaining % 60 >= 10
+                                      ? "" + ChatColor.AQUA + remaining % 60
                                       : ChatColor.AQUA
                                           + "0"
                                           + ChatColor.AQUA
                                           + ChatColor.AQUA
-                                          + remainingTime % 60));
+                                          + remaining % 60));
                         } catch (Exception e) {
                           runnableMap.get(knockedPlayer.getUniqueId()).cancel();
                         }
@@ -248,7 +248,7 @@ public class DownedPlayer {
 
   /////////////////////////////////////////////BIS HIER HABE ICH GEGUCKT, AB HIER WEITER....
 
-  public Block placeTombstone(Player player) {
+  public static Block placeTombstone(Player player) {
     Block block = player.getLocation().add(0, 1, 0).getBlock();
     block.setType(Material.CHEST);
     if (block.getBlockData() instanceof Directional) {
@@ -289,45 +289,46 @@ public class DownedPlayer {
     return block;
   }
 
-  public void removeStands(Player player) {
-    if (playerStands.containsKey(player)) {
-      for (ArmorStand stand : playerStands.get(player)) {
+  public static void removeStands(UUID uuid) {
+    if (playerStands.containsKey(uuid)) {
+      for (ArmorStand stand : playerStands.get(uuid)) {
         stand.remove();
       }
-      playerStands.remove(player);
+      playerStands.remove(uuid);
     }
   }
 
-  public void killPlayer(Player player) {
+  public static void killPlayer(Player player) {
     player.setHealth(0);
   }
 
-  public void resetMaps(Player player) {
-    revivalList.remove(player);
-    remainingTime.remove(player);
-    removeStands(player);
+  public static void resetMaps(UUID playerUUID) {
+    Player player = Bukkit.getServer().getPlayer(playerUUID);
+    knockedPlayers.remove(playerUUID);
+    remainingTime.remove(playerUUID);
+    removeStands(playerUUID);
     removeBossBar(player);
-    if (runnableMap.get(player) != null) {
-      Bukkit.getScheduler().cancelTask(runnableMap.get(player));
+    if (runnableMap.get(playerUUID) != null) {
+      runnableMap.get(playerUUID).cancel();
     }
-    runnableMap.remove(player);
-    player.removePotionEffect(PotionEffectType.BLINDNESS);
-    removeFromRevival(player);
+    runnableMap.remove(playerUUID);
+    if(player != null) player.removePotionEffect(PotionEffectType.BLINDNESS);
   }
 
   public void resetAllMaps() {
-    List<Player> cloneList = new ArrayList<>();
-    revivalList.forEach(p -> cloneList.add(p));
+    List<UUID> cloneList = new ArrayList<>();
+    knockedPlayers.forEach(cloneList::add);
     cloneList.forEach(
         p -> {
           resetMaps(p);
-          p.teleport(p.getLocation().clone().add(0, 1, 0));
+          Player player = Bukkit.getServer().getPlayer(p);
+          if(player != null) player.teleport(player.getLocation().clone().add(0, 1, 0));
         });
     Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Reloaded Revive Plugin");
   }
 
-  public void revivePlayer(Player player) {
-    resetMaps(player);
+  public static void revivePlayer(Player player) {
+    resetMaps(player.getUniqueId());
     removeBossBar(player);
     if (SettingsConfig.getInstance().getAnimation()) {
       player.getWorld().spawnParticle(Particle.HEART, player.getLocation().add(0, 1, 0), 100);
@@ -341,7 +342,7 @@ public class DownedPlayer {
     removeStealingMetaData(player);
   }
 
-  public void setBossBar(Player player) {
+  public static void setBossBar(Player player) {
     removeBossBar(player);
     if (playerAround(player)) {
       playerAround.addPlayer(player);
@@ -350,7 +351,7 @@ public class DownedPlayer {
     }
   }
 
-  public void removeBossBar(Player player) {
+  public static void removeBossBar(Player player) {
     if (noPlayerAround.getPlayers().contains(player)) {
       noPlayerAround.removePlayer(player);
     } else if (playerAround.getPlayers().contains(player)) {
@@ -358,7 +359,7 @@ public class DownedPlayer {
     }
   }
 
-  public boolean playerAround(Player player) {
+  public static boolean playerAround(Player player) {
     for (Entity ent :
         player.getNearbyEntities(
             SettingsConfig.getInstance().getDetectionRange(),
@@ -371,7 +372,7 @@ public class DownedPlayer {
     return false;
   }
 
-  public void updateBossbars() { // updates bossbars to current text's
+  public static void updateBossbars() { // updates bossbars to current text's
     noPlayerAround.setTitle(
         ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getPressSneak()));
     playerAround.setTitle(
@@ -379,7 +380,7 @@ public class DownedPlayer {
             '&', MessagesConfig.getInstance().getCantPressSneak()));
   }
 
-  public void removeStealingMetaData(Player deadPlayer) {
+  public static void removeStealingMetaData(Player deadPlayer) {
     for (Player player : Bukkit.getServer().getOnlinePlayers()) {
       if (player.hasMetadata("ReviveStealing")
           && ((UUID) player.getMetadata("ReviveStealing").get(0).value())
@@ -391,7 +392,7 @@ public class DownedPlayer {
     }
   }
 
-  public void toggleBlindness(Player player) {
+  public static void toggleBlindness(Player player) {
     if (player.hasPotionEffect(PotionEffectType.BLINDNESS)
         && !SettingsConfig.getInstance().getBlindness()) {
       player.removePotionEffect(PotionEffectType.BLINDNESS);
@@ -402,19 +403,11 @@ public class DownedPlayer {
     }
   }
 
-  public HashMap<Player, List<ArmorStand>> getPlayerStands() {
+  public static HashMap<UUID, List<ArmorStand>> getPlayerStands() {
     return playerStands;
   }
 
-  public List<Player> getRevivalList() {
-    return revivalList;
-  }
-
-  public void addRevivelList(Player player) {
-    revivalList.add(player);
-  }
-
-  public void removeFromRevival(Player player) {
-    revivalList.remove(player);
+  public static List<UUID> getKnockedList() {
+    return knockedPlayers;
   }
 }

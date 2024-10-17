@@ -23,18 +23,13 @@ import java.util.*;
 
 public class ReviveListener implements Listener {
 
-    private DownedPlayer downedPlayer;
     private HashMap<Block, ItemStack[]> chestContents = new HashMap<>();
-
-    public ReviveListener(DownedPlayer downedPlayer) {
-        this.downedPlayer = downedPlayer;
-    }
 
     @EventHandler
     public void onDeath(PlayerDeathEvent e) {
         if (e.getEntity() instanceof Player) {
             Player player = e.getEntity();
-            if (downedPlayer.getRevivalList().contains(player)) {
+            if (DownedPlayer.getKnockedList().contains(player.getUniqueId())) {
                 e.setDeathMessage(ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getPlayerDiedMessage(player.getName())));
                 downedPlayer.resetMaps(player);
                 downedPlayer.removeStealingMetaData(player);
@@ -263,9 +258,9 @@ public class ReviveListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        if (downedPlayer.getPlayerStands().containsKey(e.getPlayer())) {
+        if (DownedPlayer.getKnockedList().contains(e.getPlayer().getUniqueId())) {
             e.getPlayer().setHealth(0);
-            downedPlayer.resetMaps(e.getPlayer());
+            DownedPlayer.resetMaps(e.getPlayer().getUniqueId());
         }
 
         if (e.getPlayer().hasMetadata("ReviveStealing"))
