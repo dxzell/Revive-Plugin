@@ -1,13 +1,11 @@
 package com.dxzell.revive;
 
-import com.dxzell.revive.CustomMessages.CustomInventory;
-import com.dxzell.revive.CustomMessages.InventoryListener;
-import com.dxzell.revive.KnockoutMechanic.DownedPlayer;
-import com.dxzell.revive.KnockoutMechanic.ReviveListener;
-import com.dxzell.revive.Settings.Settings;
-import com.dxzell.revive.Settings.SettingsCommand;
-import com.dxzell.revive.Settings.SettingsCommandTab;
-import com.dxzell.revive.Settings.SettingsListener;
+import com.dxzell.revive.knockoutmechanic.DownedPlayer;
+import com.dxzell.revive.knockoutmechanic.ReviveListener;
+import com.dxzell.revive.settings.Settings;
+import com.dxzell.revive.settings.SettingsCommand;
+import com.dxzell.revive.settings.SettingsCommandTab;
+import com.dxzell.revive.settings.SettingsListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -23,72 +21,62 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class Revive extends JavaPlugin {
-
-    private Config config = new Config(this);
-    private DownedPlayer downedPlayer = new DownedPlayer(this);
-
-    private Settings settings = new Settings(this);
-
-    private CustomInventory customInv = new CustomInventory(this);
-
-
+    private DownedPlayer downedPlayer;
+    private Settings settings;
+    private static Revive mainInstance;
 
     @Override
     public void onEnable() {
-
+        mainInstance = this;
+        settings = new Settings(this);
+        downedPlayer = new DownedPlayer(this);
         Bukkit.getPluginManager().registerEvents(new ReviveListener(downedPlayer, this), this);
         getCommand("revive").setExecutor(new SettingsCommand(settings));
         Bukkit.getPluginManager().registerEvents(new SettingsListener(settings, this), this);
         getCommand("revive").setTabCompleter(new SettingsCommandTab(settings));
-        Bukkit.getPluginManager().registerEvents(new InventoryListener(customInv, this), this);
     }
 
-    public ItemStack buildItemStack(Material mat, String displayName, String lore, boolean enchantment)
-    {
+    @Override
+    public void onDisable() {
+        for(Player player : getServer().getOnlinePlayers()) {
+            if(player.hasMetadata("ReviveStealing")) {
+                player.closeInventory();
+                player.removeMetadata("ReviveStealing", this);
+            }
+        }
+    }
+
+    public ItemStack buildItemStack(Material mat, String displayName, String lore, boolean enchantment) {
         ItemStack stack = new ItemStack(mat);
         ItemMeta meta = stack.getItemMeta();
         meta.setDisplayName(displayName);
 
         //Splitting the lore
-
         String[] splitLore = lore.split("°");
         List<String> loreList = new ArrayList<>();
-        for(String split : splitLore)
-        {
+        for (String split : splitLore) {
             loreList.add(split);
         }
         meta.setLore(loreList);
 
         //End
-
-        if(enchantment) meta.addEnchant(Enchantment.KNOCKBACK, 0, false);
+        if (enchantment) meta.addEnchant(Enchantment.KNOCKBACK, 0, false);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         stack.setItemMeta(meta);
 
         return stack;
-
     }
 
-    public Config getConfigClass()
-    {
-        return config;
-    }
-
-    public HashMap<Player, List<ArmorStand>> getStands()
-    {
+    public HashMap<Player, List<ArmorStand>> getStands() {
         return downedPlayer.getPlayerStands();
     }
 
-    public DownedPlayer getDownedPlayer()
-    {
+    public DownedPlayer getDownedPlayer() {
         return downedPlayer;
     }
 
-    public CustomInventory getInv()
-    {
-        return customInv;
+    public static Revive getMainInstance() {
+        return mainInstance;
     }
-
-
 }

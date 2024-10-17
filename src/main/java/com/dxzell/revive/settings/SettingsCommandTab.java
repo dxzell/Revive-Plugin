@@ -1,4 +1,4 @@
-package com.dxzell.revive.Settings;
+package com.dxzell.revive.settings;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,13 +17,11 @@ public class SettingsCommandTab implements TabCompleter {
         this.settings = settings;
     }
 
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args)
-    {
+    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         List<String> liste = new ArrayList<>();
 
-        if(args.length == 1)
-        {
-            return StringUtil.copyPartialMatches(args[0], Arrays.asList(new String[] {"settings",  "message"}), new ArrayList<>());
+        if (args.length == 1) {
+            return StringUtil.copyPartialMatches(args[0], Arrays.asList(new String[]{"settings", "reload"}), new ArrayList<>());
         }
         return liste;
     }
