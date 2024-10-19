@@ -248,6 +248,7 @@ public abstract class DownedPlayer {
 
   /////////////////////////////////////////////BIS HIER HABE ICH GEGUCKT, AB HIER WEITER....
 
+  // Places a tombstone after a knocked player dies
   public static Block placeTombstone(Player player) {
     Block block = player.getLocation().add(0, 1, 0).getBlock();
     block.setType(Material.CHEST);
@@ -289,6 +290,12 @@ public abstract class DownedPlayer {
     return block;
   }
 
+  // Kills player
+  public static void killPlayer(Player player) {
+    player.setHealth(0);
+  }
+
+  // Removes knocked players armor stands
   public static void removeStands(UUID uuid) {
     if (playerStands.containsKey(uuid)) {
       for (ArmorStand stand : playerStands.get(uuid)) {
@@ -298,10 +305,7 @@ public abstract class DownedPlayer {
     }
   }
 
-  public static void killPlayer(Player player) {
-    player.setHealth(0);
-  }
-
+  // Removes given players from all collections
   public static void resetMaps(UUID playerUUID) {
     Player player = Bukkit.getServer().getPlayer(playerUUID);
     knockedPlayers.remove(playerUUID);
@@ -315,7 +319,8 @@ public abstract class DownedPlayer {
     if(player != null) player.removePotionEffect(PotionEffectType.BLINDNESS);
   }
 
-  public void resetAllMaps() {
+  // Resets all collections / For a reload
+  public static void resetAllMaps() {
     List<UUID> cloneList = new ArrayList<>();
     knockedPlayers.forEach(cloneList::add);
     cloneList.forEach(
@@ -327,6 +332,7 @@ public abstract class DownedPlayer {
     Bukkit.getServer().broadcastMessage(ChatColor.GRAY + "Reloaded Revive Plugin");
   }
 
+  // Revives player
   public static void revivePlayer(Player player) {
     resetMaps(player.getUniqueId());
     removeBossBar(player);
@@ -342,6 +348,7 @@ public abstract class DownedPlayer {
     removeStealingMetaData(player);
   }
 
+  // Sets players bossbar
   public static void setBossBar(Player player) {
     removeBossBar(player);
     if (playerAround(player)) {
@@ -351,6 +358,7 @@ public abstract class DownedPlayer {
     }
   }
 
+  // Removes players bossbar
   public static void removeBossBar(Player player) {
     if (noPlayerAround.getPlayers().contains(player)) {
       noPlayerAround.removePlayer(player);
@@ -359,6 +367,7 @@ public abstract class DownedPlayer {
     }
   }
 
+  // Checks whether player is around or not
   public static boolean playerAround(Player player) {
     for (Entity ent :
         player.getNearbyEntities(
@@ -372,6 +381,7 @@ public abstract class DownedPlayer {
     return false;
   }
 
+  // Updates the bossbar texts
   public static void updateBossbars() { // updates bossbars to current text's
     noPlayerAround.setTitle(
         ChatColor.translateAlternateColorCodes('&', MessagesConfig.getInstance().getPressSneak()));
@@ -380,6 +390,7 @@ public abstract class DownedPlayer {
             '&', MessagesConfig.getInstance().getCantPressSneak()));
   }
 
+  // Removes the meta data from the stealing player
   public static void removeStealingMetaData(Player deadPlayer) {
     for (Player player : Bukkit.getServer().getOnlinePlayers()) {
       if (player.hasMetadata("ReviveStealing")
@@ -392,6 +403,7 @@ public abstract class DownedPlayer {
     }
   }
 
+  // Toggles the players blindness
   public static void toggleBlindness(Player player) {
     if (player.hasPotionEffect(PotionEffectType.BLINDNESS)
         && !SettingsConfig.getInstance().getBlindness()) {
@@ -409,5 +421,9 @@ public abstract class DownedPlayer {
 
   public static List<UUID> getKnockedList() {
     return knockedPlayers;
+  }
+
+  public static void addKnockedPlayer(UUID uuid) {
+    knockedPlayers.add(uuid);
   }
 }

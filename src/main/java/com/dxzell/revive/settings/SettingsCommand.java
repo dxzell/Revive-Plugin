@@ -2,6 +2,7 @@ package com.dxzell.revive.settings;
 
 import com.dxzell.revive.configs.MessagesConfig;
 import com.dxzell.revive.configs.SettingsConfig;
+import com.dxzell.revive.knockoutmechanic.DownedPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,7 +30,7 @@ public class SettingsCommand implements CommandExecutor {
                         }
                     } else if (args[0].equalsIgnoreCase("reload")) {
                         if (player.hasPermission(SettingsConfig.getInstance().getPermission())) {
-                            settings.getMain().getDownedPlayer().resetAllMaps();
+                            DownedPlayer.resetAllMaps();
                         } else {
                             player.sendMessage(ChatColor.GOLD + "[Revive] " + ChatColor.RED + "Missing permission!");
                         }

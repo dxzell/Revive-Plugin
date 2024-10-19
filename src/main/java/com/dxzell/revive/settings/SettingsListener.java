@@ -3,6 +3,7 @@ package com.dxzell.revive.settings;
 import com.dxzell.revive.Revive;
 import com.dxzell.revive.configs.MessagesConfig;
 import com.dxzell.revive.configs.SettingsConfig;
+import com.dxzell.revive.knockoutmechanic.DownedPlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -17,12 +18,10 @@ import java.util.List;
 public class SettingsListener implements Listener {
 
     private Settings settings;
-    private Revive main;
     private List<Player> pickingItemType = new ArrayList<>();
 
-    public SettingsListener(Settings settings, Revive main) {
+    public SettingsListener(Settings settings) {
         this.settings = settings;
-        this.main = main;
     }
 
     @EventHandler
@@ -118,7 +117,7 @@ public class SettingsListener implements Listener {
 
     // Updates the text of every knocked players armorstand
     private void updateKnockedTexts() {
-        for (List<ArmorStand> stands : main.getStands().values()) {
+        for (List<ArmorStand> stands : DownedPlayer.getPlayerStands().values()) {
             ArmorStand stand = stands.get(2);
             stand.setCustomName(ChatColor.translateAlternateColorCodes('&', (SettingsConfig.getInstance().getNoItem() ? MessagesConfig.getInstance().getNoKnockedItem(0) : MessagesConfig.getInstance().getKnockedItem(0))).replace("[item]", SettingsConfig.getInstance().getType()));
             stand = stands.get(3);
